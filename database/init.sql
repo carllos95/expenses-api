@@ -1,0 +1,60 @@
+CREATE DATABASE IF NOT EXISTS expenses;
+USE expenses;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(120) NOT NULL UNIQUE,
+  phone VARCHAR(30) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS participants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_participants_user
+    FOREIGN KEY (userId)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS user_groups (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_groups_user
+    FOREIGN KEY (userId)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS groups_participants (
+  groupId INT NOT NULL,
+  participantId INT NOT NULL,
+  PRIMARY KEY (groupId, participantId),
+  CONSTRAINT fk_groups_participants_group
+    FOREIGN KEY (groupId)
+    REFERENCES user_groups(id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_groups_participants_participant
+    FOREIGN KEY (participantId)
+    REFERENCES participants(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  groupId INT NOT NULL,
+  name VARCHAR(160) NOT NULL,
+  value DECIMAL(10, 2) NOT NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_expenses_group
+    FOREIGN KEY (groupId)
+    REFERENCES user_groups(id)
+    ON DELETE CASCADE
+);
