@@ -2,7 +2,7 @@ const { prisma } = require("../config/prisma");
 
 async function groupExistsForUser(userId, groupId) {
   const group = await prisma.group.findFirst({
-    where: { id: groupId, userId, situation: 1 },
+    where: { id: Number(groupId), userId: Number(userId), situation: 1 },
     select: { id: true }
   });
 
@@ -12,7 +12,7 @@ async function groupExistsForUser(userId, groupId) {
 async function create(groupId, data) {
   const expense = await prisma.expense.create({
     data: {
-      groupId,
+      groupId: Number(groupId),
       name: data.name,
       value: data.value
     }
@@ -25,8 +25,8 @@ async function findAllByUserId(userId, groupId) {
   return prisma.expense.findMany({
     where: {
       situation: 1,
-      ...(groupId ? { groupId } : {}),
-      group: { userId, situation: 1 }
+      ...(groupId ? { groupId: Number(groupId) } : {}),
+      group: { userId: Number(userId), situation: 1 }
     },
     select: {
       id: true,
@@ -44,7 +44,7 @@ async function updateById(userId, expenseId, data) {
     where: {
       id: expenseId,
       situation: 1,
-      group: { userId, situation: 1 }
+      group: { userId: Number(userId), situation: 1 }
     },
     data
   });
@@ -57,7 +57,7 @@ async function deleteById(userId, expenseId) {
     where: {
       id: expenseId,
       situation: 1,
-      group: { userId, situation: 1 }
+      group: { userId: Number(userId), situation: 1 }
     },
     data: { situation: 2 }
   });

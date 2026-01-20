@@ -1,16 +1,16 @@
 const { prisma } = require("../config/prisma");
 
-async function create(userId, name, date, participants = []) {
+async function create(userId, name, date, participants = null) {
   const groupId = await prisma.$transaction(async (tx) => {
     const group = await tx.group.create({
       data: {
-        userId,
+        userId: Number(userId),
         name,
         date
       }
     });
 
-    if (participants.length) {
+    if (Array.isArray(participants) && participants.length) {
       await tx.participant.createMany({
         data: participants.map((participant) => ({
           groupId: group.id,
@@ -27,14 +27,14 @@ async function create(userId, name, date, participants = []) {
 
 async function findById(userId, groupId) {
   return prisma.group.findFirst({
-    where: { id: groupId, userId, situation: 1 },
+    where: { id: groupId, userId: Number(userId), situation: 1 },
     select: { id: true }
   });
 }
 
 async function findAllByUserId(userId) {
   return prisma.group.findMany({
-    where: { userId, situation: 1 },
+    where: { userId: Number(userId), situation: 1 },
     select: {
       id: true,
       name: true,
@@ -56,7 +56,7 @@ async function findAllByUserId(userId) {
 
 async function updateById(userId, groupId, data) {
   const result = await prisma.group.updateMany({
-    where: { id: groupId, userId, situation: 1 },
+    where: { id: groupId, userId: Number(userId), situation: 1 },
     data: {
       ...(data.name ? { name: data.name } : {}),
       ...(data.date ? { date: data.date } : {})
@@ -68,7 +68,7 @@ async function updateById(userId, groupId, data) {
 
 async function deleteById(userId, groupId) {
   const result = await prisma.group.updateMany({
-    where: { id: groupId, userId, situation: 1 },
+    where: { id: groupId, userId: Number(userId), situation: 1 },
     data: { situation: 2 }
   });
 
@@ -77,7 +77,7 @@ async function deleteById(userId, groupId) {
 
 async function findWithExpenses(userId, groupId) {
   const group = await prisma.group.findFirst({
-    where: { id: groupId, userId, situation: 1 },
+    where: { id: groupId, userId: Number(userId), situation: 1 },
     select: {
       id: true,
       name: true,
@@ -135,7 +135,7 @@ async function findIdsByUserId(userId, groupIds) {
 
   const rows = await prisma.group.findMany({
     where: {
-      userId,
+      userId: Number(userId),
       situation: 1,
       id: { in: groupIds }
     },
