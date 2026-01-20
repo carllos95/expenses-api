@@ -1,16 +1,27 @@
 const participantRepository = require("../repositories/participant.repository");
+const groupRepository = require("../repositories/group.repository");
 
 async function registerParticipants(userId, participants) {
-  const createdCount = await participantRepository.createMany(
-    userId,
-    participants
-  );
+  const groupIds = [
+    ...new Set(participants.map((participant) => Number(participant.groupId)))
+  ];
+
+  const validGroupIds = await groupRepository.findIdsByUserId(userId, groupIds);
+
+  if (validGroupIds.length !== groupIds.length) {
+    return { error: "GROUP_NOT_FOUND" };
+  }
+
+  const createdCount = await participantRepository.createMany(participants);
 
   return { message: `${createdCount} participants registered successfully.` };
 }
 
-async function listParticipants(userId) {
-  const participants = await participantRepository.findAllByUserId(userId);
+async function listParticipants(userId, groupId) {
+  const participants = await participantRepository.findAllByUserId(
+    userId,
+    groupId
+  );
   return { participants };
 }
 

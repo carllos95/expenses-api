@@ -1,7 +1,12 @@
 const groupRepository = require("../repositories/group.repository");
 
-async function createGroup(userId, name, date) {
-  const groupId = await groupRepository.create(userId, name, date);
+async function createGroup(userId, data) {
+  const groupId = await groupRepository.create(
+    userId,
+    data.name,
+    data.date,
+    data.participants || []
+  );
   return { id: groupId };
 }
 
@@ -11,6 +16,16 @@ async function listGroups(userId) {
 }
 
 async function updateGroup(userId, groupId, data) {
+  const group = await groupRepository.findById(userId, groupId);
+
+  if (!group) {
+    return { error: "GROUP_NOT_FOUND" };
+  }
+
+  if (!data.name && !data.date) {
+    return { updated: false };
+  }
+
   const affectedRows = await groupRepository.updateById(userId, groupId, data);
   return { updated: affectedRows > 0 };
 }
@@ -20,4 +35,15 @@ async function deleteGroup(userId, groupId) {
   return { deleted: affectedRows > 0 };
 }
 
-module.exports = { createGroup, listGroups, updateGroup, deleteGroup };
+async function getGroupWithExpenses(userId, groupId) {
+  const group = await groupRepository.findWithExpenses(userId, groupId);
+  return group;
+}
+
+module.exports = {
+  createGroup,
+  listGroups,
+  updateGroup,
+  deleteGroup,
+  getGroupWithExpenses
+};

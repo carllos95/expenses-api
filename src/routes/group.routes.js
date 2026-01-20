@@ -23,6 +23,13 @@ const router = express.Router();
  *             properties:
  *               name: { type: string }
  *               date: { type: string, format: date }
+ *               participants:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [name]
+ *                   properties:
+ *                     name: { type: string }
  *     responses:
  *       201:
  *         description: Group created
@@ -43,6 +50,27 @@ router.post("/register", authMiddleware, groupController.register);
  *         description: Groups list
  */
 router.get("/", authMiddleware, groupController.list);
+
+/**
+ * @openapi
+ * /groups/{id}/expenses:
+ *   get:
+ *     summary: Get group with expenses
+ *     tags:
+ *       - Groups
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Group with expenses
+ */
+router.get("/:id/expenses", authMiddleware, groupController.getWithExpenses);
 
 /**
  * @openapi

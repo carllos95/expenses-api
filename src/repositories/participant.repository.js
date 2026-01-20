@@ -1,27 +1,27 @@
 const { prisma } = require("../config/prisma");
 
-async function createMany(userId, participants) {
-  const values = participants.map((participant) => [
-    Number(userId),
-    participant.name,
-    participant.phone
-  ]);
-
-  console.log("Creating participants with values:", values);
+async function createMany(participants) {
   const result = await prisma.participant.createMany({
-    data: values.map(([userId, name, phone]) => ({ userId, name, phone }))
+    data: participants.map((participant) => ({
+      groupId: Number(participant.groupId),
+      name: participant.name
+    }))
   });
 
   return result.count;
 }
 
-async function findAllByUserId(userId) {
+async function findAllByUserId(userId, groupId) {
   return prisma.participant.findMany({
-    where: { userId: Number(userId), situation: 1 },
+    where: {
+      situation: 1,
+      ...(groupId ? { groupId: Number(groupId) } : {}),
+      group: { userId: Number(userId), situation: 1 }
+    },
     select: {
       id: true,
+      groupId: true,
       name: true,
-      phone: true,
       createdAt: true
     },
     orderBy: { createdAt: "desc" }
@@ -30,10 +30,13 @@ async function findAllByUserId(userId) {
 
 async function updateById(userId, participantId, data) {
   const result = await prisma.participant.updateMany({
-    where: { id: participantId, userId: Number(userId), situation: 1 },
+    where: {
+      id: participantId,
+      situation: 1,
+      group: { userId: Number(userId), situation: 1 }
+    },
     data: {
-      name: data.name,
-      phone: data.phone
+      name: data.name
     }
   });
 
@@ -42,7 +45,11 @@ async function updateById(userId, participantId, data) {
 
 async function deleteById(userId, participantId) {
   const result = await prisma.participant.updateMany({
-    where: { id: participantId, userId: Number(userId), situation: 1 },
+    where: {
+      id: participantId,
+      situation: 1,
+      group: { userId: Number(userId), situation: 1 }
+    },
     data: { situation: 2 }
   });
 

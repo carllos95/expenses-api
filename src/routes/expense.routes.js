@@ -1,16 +1,16 @@
 const express = require("express");
-const participantController = require("../controllers/participant.controller");
+const expenseController = require("../controllers/expense.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
 /**
  * @openapi
- * /participants/register:
+ * /expenses/register:
  *   post:
- *     summary: Register participants (batch)
+ *     summary: Create expense
  *     tags:
- *       - Participants
+ *       - Expenses
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -18,26 +18,25 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: array
- *             items:
- *               type: object
- *               required: [groupId, name]
- *               properties:
- *                 groupId: { type: integer }
- *                 name: { type: string }
+ *             type: object
+ *             required: [groupId, name, value]
+ *             properties:
+ *               groupId: { type: integer }
+ *               name: { type: string }
+ *               value: { type: number, format: float }
  *     responses:
  *       201:
- *         description: Participants created
+ *         description: Expense created
  */
-router.post("/register", authMiddleware, participantController.register);
+router.post("/register", authMiddleware, expenseController.register);
 
 /**
  * @openapi
- * /participants:
+ * /expenses:
  *   get:
- *     summary: List participants
+ *     summary: List expenses
  *     tags:
- *       - Participants
+ *       - Expenses
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -47,17 +46,17 @@ router.post("/register", authMiddleware, participantController.register);
  *           type: integer
  *     responses:
  *       200:
- *         description: Participants list
+ *         description: Expenses list
  */
-router.get("/", authMiddleware, participantController.list);
+router.get("/", authMiddleware, expenseController.list);
 
 /**
  * @openapi
- * /participants/{id}:
+ * /expenses/{id}:
  *   put:
- *     summary: Update participant
+ *     summary: Update expense
  *     tags:
- *       - Participants
+ *       - Expenses
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -72,22 +71,23 @@ router.get("/", authMiddleware, participantController.list);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name]
  *             properties:
+ *               groupId: { type: integer }
  *               name: { type: string }
+ *               value: { type: number, format: float }
  *     responses:
  *       200:
- *         description: Participant updated
+ *         description: Expense updated
  */
-router.put("/:id", authMiddleware, participantController.update);
+router.put("/:id", authMiddleware, expenseController.update);
 
 /**
  * @openapi
- * /participants/{id}:
+ * /expenses/{id}:
  *   delete:
- *     summary: Delete participant
+ *     summary: Delete expense
  *     tags:
- *       - Participants
+ *       - Expenses
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -98,8 +98,8 @@ router.put("/:id", authMiddleware, participantController.update);
  *           type: integer
  *     responses:
  *       200:
- *         description: Participant deleted
+ *         description: Expense deleted
  */
-router.delete("/:id", authMiddleware, participantController.remove);
+router.delete("/:id", authMiddleware, expenseController.remove);
 
 module.exports = router;

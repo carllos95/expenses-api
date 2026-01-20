@@ -1,8 +1,8 @@
 const express = require("express");
 const authRoutes = require("./routes/auth.routes");
-const participantRoutes = require("./routes/participant.routes");
 const groupRoutes = require("./routes/group.routes");
-const groupParticipantRoutes = require("./routes/groupParticipant.routes");
+const expenseRoutes = require("./routes/expense.routes");
+const participantRoutes = require("./routes/participant.routes");
 const errorHandler = require("./middlewares/error.middleware");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
@@ -18,9 +18,9 @@ app.get("/health", (req, res) => {
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", authRoutes);
-app.use("/participants", participantRoutes);
 app.use("/groups", groupRoutes);
-app.use("/groups-participants", groupParticipantRoutes);
+app.use("/expenses", expenseRoutes);
+app.use("/participants", participantRoutes);
 
 app.use(errorHandler);
 

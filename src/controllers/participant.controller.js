@@ -4,16 +4,15 @@ const participantService = require("../services/participant.service");
 const participantsSchema = Joi.array()
   .items(
     Joi.object({
+      groupId: Joi.number().integer().required(),
       name: Joi.string().min(2).max(120).required(),
-      phone: Joi.string().min(6).max(30).required()
     })
   )
   .min(1)
   .required();
 
 const participantSchema = Joi.object({
-  name: Joi.string().min(2).max(120).required(),
-  phone: Joi.string().min(6).max(30).required()
+  name: Joi.string().min(2).max(120).required()
 });
 
 async function register(req, res, next) {
@@ -29,6 +28,10 @@ async function register(req, res, next) {
       value
     );
 
+    if (result.error === "GROUP_NOT_FOUND") {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
     return res.status(201).json(result);
   } catch (err) {
     return next(err);
@@ -37,7 +40,16 @@ async function register(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const result = await participantService.listParticipants(req.user.id);
+    const groupId = req.query.groupId ? Number(req.query.groupId) : null;
+
+    if (req.query.groupId && !groupId) {
+      return res.status(400).json({ message: "Invalid groupId" });
+    }
+
+    const result = await participantService.listParticipants(
+      req.user.id,
+      groupId
+    );
     return res.json(result);
   } catch (err) {
     return next(err);
