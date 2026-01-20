@@ -25,4 +25,11 @@ async function create({ name, email, phone, password }) {
   return user.id;
 }
 
-module.exports = { findByEmail, findById, create };
+async function updatePassword(id, password) {
+  await prisma.user.update({
+    where: { id },
+    data: { password }
+  });
+}
+
+module.exports = { findByEmail, findById, create, updatePassword };
