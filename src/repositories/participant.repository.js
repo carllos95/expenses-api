@@ -2,11 +2,12 @@ const { prisma } = require("../config/prisma");
 
 async function createMany(userId, participants) {
   const values = participants.map((participant) => [
-    userId,
+    Number(userId),
     participant.name,
     participant.phone
   ]);
 
+  console.log("Creating participants with values:", values);
   const result = await prisma.participant.createMany({
     data: values.map(([userId, name, phone]) => ({ userId, name, phone }))
   });
@@ -16,7 +17,7 @@ async function createMany(userId, participants) {
 
 async function findAllByUserId(userId) {
   return prisma.participant.findMany({
-    where: { userId },
+    where: { userId: Number(userId) },
     select: {
       id: true,
       name: true,
@@ -29,7 +30,7 @@ async function findAllByUserId(userId) {
 
 async function updateById(userId, participantId, data) {
   const result = await prisma.participant.updateMany({
-    where: { id: participantId, userId },
+    where: { id: participantId, userId: Number(userId) },
     data: {
       name: data.name,
       phone: data.phone
@@ -41,7 +42,7 @@ async function updateById(userId, participantId, data) {
 
 async function deleteById(userId, participantId) {
   const result = await prisma.participant.deleteMany({
-    where: { id: participantId, userId }
+    where: { id: participantId, userId: Number(userId) }
   });
 
   return result.count;
