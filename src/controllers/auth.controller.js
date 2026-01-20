@@ -81,6 +81,9 @@ async function forgot(req, res, next) {
     if (result.error === "EMAIL_NOT_FOUND") {
       return res.status(404).json({ message: "Email nao encontrado" });
     }
+    if (result.error === "EMAIL_SEND_FAILED") {
+      return res.status(500).json({ message: "Falha ao enviar o email" });
+    }
 
     return res.json({ message: "Codigo enviado" });
   } catch (err) {

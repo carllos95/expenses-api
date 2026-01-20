@@ -6,6 +6,7 @@ const {
   verifyResetCode,
   consumeResetCode
 } = require("../utils/reset-code-store");
+const { sendResetCodeEmail } = require("./mail.service");
 
 async function login(email, password) {
   const user = await userRepository.findByEmail(email);
@@ -67,7 +68,11 @@ async function requestPasswordReset(email) {
   }
 
   const code = createResetCode(email);
-  console.log(`Reset code for ${email}: ${code}`);
+  try {
+    await sendResetCodeEmail(email, code);
+  } catch (error) {
+    return { error: "EMAIL_SEND_FAILED" };
+  }
 
   return { ok: true };
 }

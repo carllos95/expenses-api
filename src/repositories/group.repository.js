@@ -33,7 +33,7 @@ async function findById(userId, groupId) {
 }
 
 async function findAllByUserId(userId) {
-  return prisma.group.findMany({
+  const groups = await prisma.group.findMany({
     where: { userId: Number(userId), situation: 1 },
     select: {
       id: true,
@@ -52,6 +52,30 @@ async function findAllByUserId(userId) {
     },
     orderBy: { createdAt: "desc" }
   });
+
+  const withTotals = await Promise.all(
+    groups.map(async (group) => {
+      const totalResult = await prisma.expense.aggregate({
+        where: {
+          groupId: group.id,
+          situation: 1,
+          group: { userId: Number(userId), situation: 1 }
+        },
+        _sum: { value: true }
+      });
+      const totalValue = Number(totalResult._sum.value || 0);
+      const participantCount = group.participants.length;
+      const perParticipant = participantCount ? totalValue / participantCount : 0;
+
+      return {
+        ...group,
+        totalValue,
+        perParticipant
+      };
+    })
+  );
+
+  return withTotals;
 }
 
 async function updateById(userId, groupId, data) {
