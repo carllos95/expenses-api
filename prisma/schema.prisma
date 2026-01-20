@@ -13,6 +13,7 @@ model User {
   email        String        @unique
   phone        String
   password     String
+  situation    Int           @default(1)
   createdAt    DateTime      @default(now())
   participants Participant[]
   groups       Group[]
@@ -25,6 +26,7 @@ model Participant {
   userId        Int
   name          String
   phone         String
+  situation     Int                @default(1)
   createdAt     DateTime           @default(now())
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupLinks    GroupParticipant[]
@@ -36,6 +38,8 @@ model Group {
   id        Int                @id @default(autoincrement())
   userId    Int
   name      String
+  date      DateTime           @db.Date
+  situation Int                @default(1)
   createdAt DateTime           @default(now())
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   members   GroupParticipant[]
@@ -47,6 +51,7 @@ model Group {
 model GroupParticipant {
   groupId       Int
   participantId Int
+  situation     Int          @default(1)
   group         Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
   participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
 
@@ -59,6 +64,7 @@ model Expense {
   groupId   Int
   name      String
   value     Decimal
+  situation Int      @default(1)
   createdAt DateTime @default(now())
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
 

@@ -2,7 +2,7 @@ const { prisma } = require("../config/prisma");
 
 async function groupExistsForUser(userId, groupId) {
   const group = await prisma.group.findFirst({
-    where: { id: groupId, userId },
+    where: { id: groupId, userId, situation: 1 },
     select: { id: true }
   });
 
@@ -11,7 +11,7 @@ async function groupExistsForUser(userId, groupId) {
 
 async function participantExistsForUser(userId, participantId) {
   const participant = await prisma.participant.findFirst({
-    where: { id: participantId, userId },
+    where: { id: participantId, userId, situation: 1 },
     select: { id: true }
   });
 
@@ -33,7 +33,8 @@ async function listLinks(userId, groupId) {
   const links = await prisma.groupParticipant.findMany({
     where: {
       ...(groupId ? { groupId } : {}),
-      group: { userId }
+      situation: 1,
+      group: { userId, situation: 1 }
     },
     select: {
       groupId: true,
@@ -42,7 +43,8 @@ async function listLinks(userId, groupId) {
           id: true,
           name: true,
           phone: true,
-          createdAt: true
+          createdAt: true,
+          situation: true
         }
       }
     },
@@ -53,20 +55,23 @@ async function listLinks(userId, groupId) {
     }
   });
 
-  return links.map((link) => ({
-    groupId: link.groupId,
-    participantId: link.participant.id,
-    name: link.participant.name,
-    phone: link.participant.phone,
-    createdAt: link.participant.createdAt
-  }));
+  return links
+    .filter((link) => link.participant.situation === 1)
+    .map((link) => ({
+      groupId: link.groupId,
+      participantId: link.participant.id,
+      name: link.participant.name,
+      phone: link.participant.phone,
+      createdAt: link.participant.createdAt
+    }));
 }
 
 async function updateLink(oldGroupId, oldParticipantId, newGroupId, newParticipantId) {
   const result = await prisma.groupParticipant.updateMany({
     where: {
       groupId: oldGroupId,
-      participantId: oldParticipantId
+      participantId: oldParticipantId,
+      situation: 1
     },
     data: {
       groupId: newGroupId,
@@ -78,8 +83,9 @@ async function updateLink(oldGroupId, oldParticipantId, newGroupId, newParticipa
 }
 
 async function deleteLink(groupId, participantId) {
-  const result = await prisma.groupParticipant.deleteMany({
-    where: { groupId, participantId }
+  const result = await prisma.groupParticipant.updateMany({
+    where: { groupId, participantId, situation: 1 },
+    data: { situation: 2 }
   });
 
   return result.count;

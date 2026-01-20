@@ -17,7 +17,7 @@ async function createMany(userId, participants) {
 
 async function findAllByUserId(userId) {
   return prisma.participant.findMany({
-    where: { userId: Number(userId) },
+    where: { userId: Number(userId), situation: 1 },
     select: {
       id: true,
       name: true,
@@ -30,7 +30,7 @@ async function findAllByUserId(userId) {
 
 async function updateById(userId, participantId, data) {
   const result = await prisma.participant.updateMany({
-    where: { id: participantId, userId: Number(userId) },
+    where: { id: participantId, userId: Number(userId), situation: 1 },
     data: {
       name: data.name,
       phone: data.phone
@@ -41,8 +41,9 @@ async function updateById(userId, participantId, data) {
 }
 
 async function deleteById(userId, participantId) {
-  const result = await prisma.participant.deleteMany({
-    where: { id: participantId, userId: Number(userId) }
+  const result = await prisma.participant.updateMany({
+    where: { id: participantId, userId: Number(userId), situation: 1 },
+    data: { situation: 2 }
   });
 
   return result.count;

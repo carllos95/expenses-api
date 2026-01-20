@@ -19,9 +19,10 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name]
+ *             required: [name, date]
  *             properties:
  *               name: { type: string }
+ *               date: { type: string, format: date }
  *     responses:
  *       201:
  *         description: Group created
@@ -64,9 +65,9 @@ router.get("/", authMiddleware, groupController.list);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name]
  *             properties:
  *               name: { type: string }
+ *               date: { type: string, format: date }
  *     responses:
  *       200:
  *         description: Group updated

@@ -1,7 +1,7 @@
 const groupRepository = require("../repositories/group.repository");
 
-async function createGroup(userId, name) {
-  const groupId = await groupRepository.create(userId, name);
+async function createGroup(userId, name, date) {
+  const groupId = await groupRepository.create(userId, name, date);
   return { id: groupId };
 }
 
@@ -10,8 +10,8 @@ async function listGroups(userId) {
   return { groups };
 }
 
-async function updateGroup(userId, groupId, name) {
-  const affectedRows = await groupRepository.updateById(userId, groupId, name);
+async function updateGroup(userId, groupId, data) {
+  const affectedRows = await groupRepository.updateById(userId, groupId, data);
   return { updated: affectedRows > 0 };
 }
 

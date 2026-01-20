@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(120) NOT NULL UNIQUE,
   phone VARCHAR(30) NOT NULL,
   password VARCHAR(255) NOT NULL,
+  situation TINYINT NOT NULL DEFAULT 1,
   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS participants (
   userId INT NOT NULL,
   name VARCHAR(120) NOT NULL,
   phone VARCHAR(30) NOT NULL,
+  situation TINYINT NOT NULL DEFAULT 1,
   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_participants_user
     FOREIGN KEY (userId)
@@ -26,6 +28,8 @@ CREATE TABLE IF NOT EXISTS user_groups (
   id INT AUTO_INCREMENT PRIMARY KEY,
   userId INT NOT NULL,
   name VARCHAR(120) NOT NULL,
+  date DATE NOT NULL,
+  situation TINYINT NOT NULL DEFAULT 1,
   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_groups_user
     FOREIGN KEY (userId)
@@ -36,6 +40,7 @@ CREATE TABLE IF NOT EXISTS user_groups (
 CREATE TABLE IF NOT EXISTS groups_participants (
   groupId INT NOT NULL,
   participantId INT NOT NULL,
+  situation TINYINT NOT NULL DEFAULT 1,
   PRIMARY KEY (groupId, participantId),
   CONSTRAINT fk_groups_participants_group
     FOREIGN KEY (groupId)
@@ -52,6 +57,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   groupId INT NOT NULL,
   name VARCHAR(160) NOT NULL,
   value DECIMAL(10, 2) NOT NULL,
+  situation TINYINT NOT NULL DEFAULT 1,
   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_expenses_group
     FOREIGN KEY (groupId)

@@ -1,10 +1,11 @@
 const { prisma } = require("../config/prisma");
 
-async function create(userId, name) {
+async function create(userId, name, date) {
   const group = await prisma.group.create({
     data: {
       userId,
-      name
+      name,
+      date
     }
   });
 
@@ -13,28 +14,33 @@ async function create(userId, name) {
 
 async function findAllByUserId(userId) {
   return prisma.group.findMany({
-    where: { userId },
+    where: { userId, situation: 1 },
     select: {
       id: true,
       name: true,
+      date: true,
       createdAt: true
     },
     orderBy: { createdAt: "desc" }
   });
 }
 
-async function updateById(userId, groupId, name) {
+async function updateById(userId, groupId, data) {
   const result = await prisma.group.updateMany({
-    where: { id: groupId, userId },
-    data: { name }
+    where: { id: groupId, userId, situation: 1 },
+    data: {
+      ...(data.name ? { name: data.name } : {}),
+      ...(data.date ? { date: data.date } : {})
+    }
   });
 
   return result.count;
 }
 
 async function deleteById(userId, groupId) {
-  const result = await prisma.group.deleteMany({
-    where: { id: groupId, userId }
+  const result = await prisma.group.updateMany({
+    where: { id: groupId, userId, situation: 1 },
+    data: { situation: 2 }
   });
 
   return result.count;

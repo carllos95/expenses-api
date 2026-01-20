@@ -1,19 +1,29 @@
 const Joi = require("joi");
 const groupService = require("../services/group.service");
 
-const groupSchema = Joi.object({
-  name: Joi.string().min(2).max(120).required()
+const groupCreateSchema = Joi.object({
+  name: Joi.string().min(2).max(120).required(),
+  date: Joi.date().iso().required()
 });
+
+const groupUpdateSchema = Joi.object({
+  name: Joi.string().min(2).max(120).optional(),
+  date: Joi.date().iso().optional()
+}).min(1);
 
 async function register(req, res, next) {
   try {
-    const { value, error } = groupSchema.validate(req.body);
+    const { value, error } = groupCreateSchema.validate(req.body);
 
     if (error) {
       return res.status(400).json({ message: error.message });
     }
 
-    const result = await groupService.createGroup(req.user.id, value.name);
+    const result = await groupService.createGroup(
+      req.user.id,
+      value.name,
+      new Date(value.date)
+    );
 
     return res.status(201).json(result);
   } catch (err) {
@@ -38,13 +48,16 @@ async function update(req, res, next) {
       return res.status(400).json({ message: "Invalid group id" });
     }
 
-    const { value, error } = groupSchema.validate(req.body);
+    const { value, error } = groupUpdateSchema.validate(req.body);
 
     if (error) {
       return res.status(400).json({ message: error.message });
     }
 
-    const result = await groupService.updateGroup(req.user.id, groupId, value.name);
+    const result = await groupService.updateGroup(req.user.id, groupId, {
+      ...(value.name ? { name: value.name } : {}),
+      ...(value.date ? { date: new Date(value.date) } : {})
+    });
 
     if (!result.updated) {
       return res.status(404).json({ message: "Group not found" });
