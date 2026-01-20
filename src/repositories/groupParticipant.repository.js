@@ -1,69 +1,88 @@
-const { pool } = require("../config/db");
+const { prisma } = require("../config/prisma");
 
 async function groupExistsForUser(userId, groupId) {
-  const [rows] = await pool.query(
-    "SELECT id FROM user_groups WHERE id = ? AND userId = ? LIMIT 1",
-    [groupId, userId]
-  );
+  const group = await prisma.group.findFirst({
+    where: { id: groupId, userId },
+    select: { id: true }
+  });
 
-  return Boolean(rows[0]);
+  return Boolean(group);
 }
 
 async function participantExistsForUser(userId, participantId) {
-  const [rows] = await pool.query(
-    "SELECT id FROM participants WHERE id = ? AND userId = ? LIMIT 1",
-    [participantId, userId]
-  );
+  const participant = await prisma.participant.findFirst({
+    where: { id: participantId, userId },
+    select: { id: true }
+  });
 
-  return Boolean(rows[0]);
+  return Boolean(participant);
 }
 
 async function createLink(groupId, participantId) {
-  const [result] = await pool.query(
-    "INSERT INTO groups_participants (groupId, participantId) VALUES (?, ?)",
-    [groupId, participantId]
-  );
+  await prisma.groupParticipant.create({
+    data: {
+      groupId,
+      participantId
+    }
+  });
 
-  return result.affectedRows;
+  return 1;
 }
 
 async function listLinks(userId, groupId) {
-  const params = [userId];
-  let sql = `
-    SELECT gp.groupId, p.id AS participantId, p.name, p.phone, p.createdAt
-    FROM groups_participants gp
-    INNER JOIN participants p ON p.id = gp.participantId
-    INNER JOIN user_groups g ON g.id = gp.groupId
-    WHERE g.userId = ?
-  `;
+  const links = await prisma.groupParticipant.findMany({
+    where: {
+      ...(groupId ? { groupId } : {}),
+      group: { userId }
+    },
+    select: {
+      groupId: true,
+      participant: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          createdAt: true
+        }
+      }
+    },
+    orderBy: {
+      participant: {
+        name: "asc"
+      }
+    }
+  });
 
-  if (groupId) {
-    sql += " AND gp.groupId = ?";
-    params.push(groupId);
-  }
-
-  sql += " ORDER BY p.name ASC";
-
-  const [rows] = await pool.query(sql, params);
-  return rows;
+  return links.map((link) => ({
+    groupId: link.groupId,
+    participantId: link.participant.id,
+    name: link.participant.name,
+    phone: link.participant.phone,
+    createdAt: link.participant.createdAt
+  }));
 }
 
 async function updateLink(oldGroupId, oldParticipantId, newGroupId, newParticipantId) {
-  const [result] = await pool.query(
-    "UPDATE groups_participants SET groupId = ?, participantId = ? WHERE groupId = ? AND participantId = ?",
-    [newGroupId, newParticipantId, oldGroupId, oldParticipantId]
-  );
+  const result = await prisma.groupParticipant.updateMany({
+    where: {
+      groupId: oldGroupId,
+      participantId: oldParticipantId
+    },
+    data: {
+      groupId: newGroupId,
+      participantId: newParticipantId
+    }
+  });
 
-  return result.affectedRows;
+  return result.count;
 }
 
 async function deleteLink(groupId, participantId) {
-  const [result] = await pool.query(
-    "DELETE FROM groups_participants WHERE groupId = ? AND participantId = ?",
-    [groupId, participantId]
-  );
+  const result = await prisma.groupParticipant.deleteMany({
+    where: { groupId, participantId }
+  });
 
-  return result.affectedRows;
+  return result.count;
 }
 
 module.exports = {

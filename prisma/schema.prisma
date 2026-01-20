@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  phone        String
+  password     String
+  createdAt    DateTime      @default(now())
+  participants Participant[]
+  groups       Group[]
+
+  @@map("users")
+}
+
+model Participant {
+  id            Int                @id @default(autoincrement())
+  userId        Int
+  name          String
+  phone         String
+  createdAt     DateTime           @default(now())
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupLinks    GroupParticipant[]
+
+  @@map("participants")
+}
+
+model Group {
+  id        Int                @id @default(autoincrement())
+  userId    Int
+  name      String
+  createdAt DateTime           @default(now())
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members   GroupParticipant[]
+  expenses  Expense[]
+
+  @@map("user_groups")
+}
+
+model GroupParticipant {
+  groupId       Int
+  participantId Int
+  group         Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, participantId])
+  @@map("groups_participants")
+}
+
+model Expense {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  name      String
+  value     Decimal
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}

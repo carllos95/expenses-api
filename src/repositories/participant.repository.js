@@ -1,4 +1,4 @@
-const { pool } = require("../config/db");
+const { prisma } = require("../config/prisma");
 
 async function createMany(userId, participants) {
   const values = participants.map((participant) => [
@@ -7,39 +7,44 @@ async function createMany(userId, participants) {
     participant.phone
   ]);
 
-  const [result] = await pool.query(
-    "INSERT INTO participants (userId, name, phone) VALUES ?",
-    [values]
-  );
+  const result = await prisma.participant.createMany({
+    data: values.map(([userId, name, phone]) => ({ userId, name, phone }))
+  });
 
-  return result.affectedRows;
+  return result.count;
 }
 
 async function findAllByUserId(userId) {
-  const [rows] = await pool.query(
-    "SELECT id, name, phone, createdAt FROM participants WHERE userId = ? ORDER BY createdAt DESC",
-    [userId]
-  );
-
-  return rows;
+  return prisma.participant.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      createdAt: true
+    },
+    orderBy: { createdAt: "desc" }
+  });
 }
 
 async function updateById(userId, participantId, data) {
-  const [result] = await pool.query(
-    "UPDATE participants SET name = ?, phone = ? WHERE id = ? AND userId = ?",
-    [data.name, data.phone, participantId, userId]
-  );
+  const result = await prisma.participant.updateMany({
+    where: { id: participantId, userId },
+    data: {
+      name: data.name,
+      phone: data.phone
+    }
+  });
 
-  return result.affectedRows;
+  return result.count;
 }
 
 async function deleteById(userId, participantId) {
-  const [result] = await pool.query(
-    "DELETE FROM participants WHERE id = ? AND userId = ?",
-    [participantId, userId]
-  );
+  const result = await prisma.participant.deleteMany({
+    where: { id: participantId, userId }
+  });
 
-  return result.affectedRows;
+  return result.count;
 }
 
 module.exports = { createMany, findAllByUserId, updateById, deleteById };

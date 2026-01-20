@@ -1,6 +1,6 @@
 const app = require("./app");
 const env = require("./config/env");
-const { verifyConnection } = require("./config/db");
+const { verifyConnection } = require("./config/prisma");
 
 async function start() {
   await verifyConnection();
